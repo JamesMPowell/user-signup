@@ -1,5 +1,6 @@
 import webapp2
 import cgi
+import re 
 
 # html boilerplate for the top of every page
 page_header = """
@@ -11,27 +12,6 @@ page_header = """
         .error {
             color: red;
         }
-        form
-        {
-            display: block;
-            margin-top: 0em;
-        }
-        tr{
-            display: table-row;
-        }
-        table
-        {
-            display: table;
-            border-collapse: seperate;
-            border-spacing: 2px;
-            border-color: grey;
-        }
-        tbody
-        {
-            display:table-row-group;
-            vertical-align:middle;
-        }
-
     </style>
 </head>
 <body>
@@ -44,17 +24,26 @@ page_footer = """
 </html>
 """
 
+USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
+def valid_username(username):
+    return username and USER_RE.match(username)
+
+PASS_RE = re.compile(r"^.{3,20}$")
+def valid_password(password):
+    return password and PASS_RE.match(password)
+
+EMAIL_RE  = re.compile(r'^[\S]+@[\S]+\.[\S]+$')
+def valid_email(email):
+    return not email or EMAIL_RE.match(email)
+
 class Main(webapp2.RequestHandler):
     def get(self):
         
         edit_header = "<h3>Signup</h3>"
 
-
-
-
        #a form for entering the username/password/email
         forms = """
-        <form method = "post">
+        <form action = "/" method = "post">
             <table>
                 <tbody>
                     <tr>
@@ -99,46 +88,53 @@ class Main(webapp2.RequestHandler):
                     </tr>
                 </tbody>
             </table>
+            <input type ="Submit">
         </form>
-        """
-        submit = """
-            <input type= "submit" value = "Submit">
         """
 
         # if we have an error, make a <p> to display it
         error = self.request.get("error")
         error_element = "<p class='error'>" + error + "</p>" if error else ""
-		
-		#example of alternate if statement
-		#error_element = ""
-		#if error:
-		#	error_element = "<p class='error'>" + error + "</p>"
 
-		
-        # combine all the pieces to build the content of our response
-        main_content = edit_header + forms + submit + error_element
-        content = page_header + main_content + page_footer
+        # combine all the pieces to build the content of our response 
+        content = page_header + edit_header + forms + page_footer + error_element
         self.response.write(content)
-        
-class username(webapp2.RequestHandler):
+
     def post(self):
-       
-        # look inside the request to figure out what the user typed
-        username = self.request.get("username")
+        have_error = False
+        username = self.request.get('username')
+        password = self.request.get('password')
+        verify = self.request.get('verify')
+        email = self.request.get('email')
 
-         # if the user typed nothing at all, redirect and yell at them
-        if(not username) or (username.strip() == ""):
-            error = "Please specify the movie you want to add."
+        params = dict(username = username,
+                      email = email)
+
+        if not valid_username(username):
+            error = "Invalid Username"
             self.redirect("/?error=" + cgi.escape(error, quote=True))
-#class password(webapp2.RequestHandler):
-#    def post(self):
-        # to do password entry/verification
+            have_error = True
 
-#class email(webapp2.RequestHandler):
-#    def post(self):
-        #to do email entry/verification
+        if not valid_password(password):
+            error = "Invalid Password"
+            self.redirect("/?error=" + cgi.escape(error, quote=True))
+            have_error = True
+        elif password != verify:
+            error = "Your passwords did not match!"
+            self.redirect("/?error=" + cgi.escape(error, quote=True))
+            have_error = True
 
-        
+        if not valid_email(email):
+            error = "Invalid Email"
+            self.redirect("/?error=" + cgi.escape(error, quote=True))
+            have_error = True
+
+        if not have_error:
+            # build response content
+            sentence = " Welcome, " + username + "!"
+            content = page_header + "<p>" + sentence + "</p>" + page_footer
+            self.response.write(content)
+                
 app = webapp2.WSGIApplication([
     ('/', Main)
 ], debug=True)
