@@ -41,6 +41,8 @@ class Main(webapp2.RequestHandler):
         
         edit_header = "<h3>Signup</h3>"
 
+    
+
        #a form for entering the username/password/email
         forms = """
         <form action = "/" method = "post">
@@ -91,10 +93,11 @@ class Main(webapp2.RequestHandler):
             <input type ="Submit">
         </form>
         """
-
-        # if we have an error, make a <p> to display it
+           
+         # if we have an error, make a <p> to display it
         error = self.request.get("error")
         error_element = "<p class='error'>" + error + "</p>" if error else ""
+        
 
         # combine all the pieces to build the content of our response 
         content = page_header + edit_header + forms + page_footer + error_element
@@ -115,21 +118,22 @@ class Main(webapp2.RequestHandler):
             self.redirect("/?error=" + cgi.escape(error, quote=True))
             have_error = True
 
-        if not valid_password(password):
+        elif not valid_password(password):
             error = "Invalid Password"
             self.redirect("/?error=" + cgi.escape(error, quote=True))
             have_error = True
+            
         elif password != verify:
             error = "Your passwords did not match!"
             self.redirect("/?error=" + cgi.escape(error, quote=True))
             have_error = True
 
-        if not valid_email(email):
+        elif not valid_email(email):
             error = "Invalid Email"
             self.redirect("/?error=" + cgi.escape(error, quote=True))
             have_error = True
 
-        if not have_error:
+        elif not have_error:
             # build response content
             sentence = " Welcome, " + username + "!"
             content = page_header + "<p>" + sentence + "</p>" + page_footer
