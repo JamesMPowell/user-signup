@@ -12,6 +12,7 @@ page_header = """
         .error {
             color: red;
         }
+  
     </style>
 </head>
 <body>
@@ -39,11 +40,13 @@ def valid_email(email):
 class Main(webapp2.RequestHandler):
     def get(self):
         
-        edit_header = "<h3>Signup</h3>"
+        edit_header = "<h1>Signup</h1>"
 
         # if we have an error
         error = self.request.get("error")
         error_element = error if error else ""
+
+        username = self.request.get('username')
 
         #a form for entering the username/password/email
         forms = """
@@ -55,8 +58,10 @@ class Main(webapp2.RequestHandler):
                             <label>
                                 Username     
                             </label>
+                        </td>
+                        <td>
                             <label class = "error">
-                                <input type="text" name="username"/> {0}
+                                <input type="text" name="username"  /> {0}
                             </label>
                         </td>
                     </tr>
@@ -65,8 +70,10 @@ class Main(webapp2.RequestHandler):
                             <label>
                                 Password     
                             </label>
+                        </td>
+                        <td>
                             <label class = "error">
-                                <input type="text" name="password"/> {1}
+                                <input type="text" name="password" value = ""/> {1}
                             </label>
                         </td>
                     </tr>
@@ -75,8 +82,10 @@ class Main(webapp2.RequestHandler):
                             <label>
                                 Verify Password
                             </label>
+                        </td>
+                        <td>
                             <label class = "error">
-                                <input type="text" name="verify"/> {2}
+                                <input type="text" name="verify" value = ""/> {2}
                             </label>
                         </td>
                     </tr>
@@ -85,6 +94,8 @@ class Main(webapp2.RequestHandler):
                             <label>
                                 Email(optional)     
                             </label>
+                        </td>
+                        <td>
                             <label class = "error">
                                 <input type="text" name="email"/> {3}
                             </label>
@@ -144,7 +155,7 @@ class Main(webapp2.RequestHandler):
 
         elif not have_error:
             # build response content
-            sentence = " Welcome, " + username + "!"
+            sentence = "<h2> Welcome, " + username + "!</h2>"
             content = page_header + "<p>" + sentence + "</p>" + page_footer
             self.response.write(content)
                 
