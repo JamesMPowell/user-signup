@@ -41,9 +41,11 @@ class Main(webapp2.RequestHandler):
         
         edit_header = "<h3>Signup</h3>"
 
-    
+        # if we have an error
+        error = self.request.get("error")
+        error_element = error if error else ""
 
-       #a form for entering the username/password/email
+        #a form for entering the username/password/email
         forms = """
         <form action = "/" method = "post">
             <table>
@@ -53,8 +55,8 @@ class Main(webapp2.RequestHandler):
                             <label>
                                 Username     
                             </label>
-                            <label>
-                                <input type="text" name="username"/>
+                            <label class = "error">
+                                <input type="text" name="username"/> {0}
                             </label>
                         </td>
                     </tr>
@@ -63,8 +65,8 @@ class Main(webapp2.RequestHandler):
                             <label>
                                 Password     
                             </label>
-                            <label>
-                                <input type="text" name="password"/>
+                            <label class = "error">
+                                <input type="text" name="password"/> {1}
                             </label>
                         </td>
                     </tr>
@@ -73,8 +75,8 @@ class Main(webapp2.RequestHandler):
                             <label>
                                 Verify Password
                             </label>
-                            <label>
-                                <input type="text" name="verify"/>
+                            <label class = "error">
+                                <input type="text" name="verify"/> {2}
                             </label>
                         </td>
                     </tr>
@@ -83,8 +85,8 @@ class Main(webapp2.RequestHandler):
                             <label>
                                 Email(optional)     
                             </label>
-                            <label>
-                                <input type="text" name="email"/>
+                            <label class = "error">
+                                <input type="text" name="email"/> {3}
                             </label>
                         </td>
                     </tr>
@@ -94,24 +96,31 @@ class Main(webapp2.RequestHandler):
         </form>
         """
            
-         # if we have an error, make a <p> to display it
-        error = self.request.get("error")
-        error_element = "<p class='error'>" + error + "</p>" if error else ""
+        
         
 
         # combine all the pieces to build the content of our response 
-        content = page_header + edit_header + forms + page_footer + error_element
-        self.response.write(content)
-
+        if error_element == "Invalid Username":
+            content = page_header + edit_header + forms.format(error_element,"","","") + page_footer 
+            self.response.write(content)
+        elif error_element == "Invalid Password":
+            content = page_header + edit_header + forms.format("",error_element,"","") + page_footer 
+            self.response.write(content)
+        elif error_element == "Your passwords did not match!":
+            content = page_header + edit_header + forms.format("","",error_element,"") + page_footer 
+            self.response.write(content)
+        elif error_element == "Invalid Email":
+            content = page_header + edit_header + forms.format("","","",error_element) + page_footer 
+            self.response.write(content)
+        else:
+            content = page_header + edit_header + forms.format(error_element,error_element,error_element,error_element) + page_footer 
+            self.response.write(content)
     def post(self):
         have_error = False
         username = self.request.get('username')
         password = self.request.get('password')
         verify = self.request.get('verify')
         email = self.request.get('email')
-
-        params = dict(username = username,
-                      email = email)
 
         if not valid_username(username):
             error = "Invalid Username"
