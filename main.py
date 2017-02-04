@@ -12,6 +12,15 @@ page_header = """
         .error {
             color: red;
         }
+        .error2 {
+            color: red;
+        }
+        .error3 {
+            color: red;
+        }
+        .error4{
+            color: red;
+        }
   
     </style>
 </head>
@@ -46,7 +55,15 @@ class Main(webapp2.RequestHandler):
         error = self.request.get("error")
         error_element = error if error else ""
 
-        username = self.request.get('username')
+        error2 = self.request.get("error2")
+        error_element2 = error2 if error2 else ""
+
+        error3 = self.request.get("error3")
+        error_element3 = error3 if error3 else ""
+
+        error4 = self.request.get("error4")
+        error_element4 = error4 if error4 else ""
+
 
         #a form for entering the username/password/email
         forms = """
@@ -61,7 +78,7 @@ class Main(webapp2.RequestHandler):
                         </td>
                         <td>
                             <label class = "error">
-                                <input type="text" name="username"  /> {0}
+                                <input type="text" name="username" value = ""/ >{0} 
                             </label>
                         </td>
                     </tr>
@@ -72,7 +89,7 @@ class Main(webapp2.RequestHandler):
                             </label>
                         </td>
                         <td>
-                            <label class = "error">
+                            <label class = "error2">
                                 <input type="text" name="password" value = ""/> {1}
                             </label>
                         </td>
@@ -84,7 +101,7 @@ class Main(webapp2.RequestHandler):
                             </label>
                         </td>
                         <td>
-                            <label class = "error">
+                            <label class = "error3">
                                 <input type="text" name="verify" value = ""/> {2}
                             </label>
                         </td>
@@ -96,8 +113,8 @@ class Main(webapp2.RequestHandler):
                             </label>
                         </td>
                         <td>
-                            <label class = "error">
-                                <input type="text" name="email"/> {3}
+                            <label class = "error4">
+                                <input type="text" name="email" value = ""/>{3}
                             </label>
                         </td>
                     </tr>
@@ -107,25 +124,9 @@ class Main(webapp2.RequestHandler):
         </form>
         """
            
-        
-        
+        content = page_header + edit_header + forms.format(error_element,error_element2,error_element3,error_element4) + page_footer 
+        self.response.write(content)
 
-        # combine all the pieces to build the content of our response 
-        if error_element == "Invalid Username":
-            content = page_header + edit_header + forms.format(error_element,"","","") + page_footer 
-            self.response.write(content)
-        elif error_element == "Invalid Password":
-            content = page_header + edit_header + forms.format("",error_element,"","") + page_footer 
-            self.response.write(content)
-        elif error_element == "Your passwords did not match!":
-            content = page_header + edit_header + forms.format("","",error_element,"") + page_footer 
-            self.response.write(content)
-        elif error_element == "Invalid Email":
-            content = page_header + edit_header + forms.format("","","",error_element) + page_footer 
-            self.response.write(content)
-        else:
-            content = page_header + edit_header + forms.format(error_element,error_element,error_element,error_element) + page_footer 
-            self.response.write(content)
     def post(self):
         have_error = False
         username = self.request.get('username')
@@ -133,24 +134,24 @@ class Main(webapp2.RequestHandler):
         verify = self.request.get('verify')
         email = self.request.get('email')
 
-        if not valid_username(username):
+        if not valid_username(username) :
             error = "Invalid Username"
             self.redirect("/?error=" + cgi.escape(error, quote=True))
             have_error = True
 
         elif not valid_password(password):
-            error = "Invalid Password"
-            self.redirect("/?error=" + cgi.escape(error, quote=True))
+            error2 = "Invalid Password"
+            self.redirect("/?error2=" + cgi.escape(error2, quote=True))
             have_error = True
             
         elif password != verify:
-            error = "Your passwords did not match!"
-            self.redirect("/?error=" + cgi.escape(error, quote=True))
+            error3 = "Your passwords did not match!"
+            self.redirect("/?error3=" + cgi.escape(error3, quote=True))
             have_error = True
 
         elif not valid_email(email):
-            error = "Invalid Email"
-            self.redirect("/?error=" + cgi.escape(error, quote=True))
+            error4 = "Invalid Email"
+            self.redirect("/?error4=" + cgi.escape(error4, quote=True))
             have_error = True
 
         elif not have_error:
