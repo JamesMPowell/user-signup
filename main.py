@@ -12,16 +12,6 @@ page_header = """
         .error {
             color: red;
         }
-        .error2 {
-            color: red;
-        }
-        .error3 {
-            color: red;
-        }
-        .error4{
-            color: red;
-        }
-  
     </style>
 </head>
 <body>
@@ -34,19 +24,29 @@ page_footer = """
 </html>
 """
 
-USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
-def valid_username(username):
-    return username and USER_RE.match(username)
-
-PASS_RE = re.compile(r"^.{3,20}$")
-def valid_password(password):
-    return password and PASS_RE.match(password)
-
-EMAIL_RE  = re.compile(r'^[\S]+@[\S]+\.[\S]+$')
-def valid_email(email):
-    return not email or EMAIL_RE.match(email)
-
 class Main(webapp2.RequestHandler):
+
+    def valid_username(self, username):
+        USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
+        if USER_RE.match(username):
+            return username
+        else: 
+            return "" 
+
+    def valid_password(self, password):
+        PASS_RE = re.compile(r"^.{3,20}$")
+        if PASS_RE.match(password):
+            return password
+        else:
+            return ""
+
+    def valid_email(self, email):
+        EMAIL_RE  = re.compile(r'^[\S]*@[\S]*\.[\S]*$')
+        if EMAIL_RE.match(email):
+            return email
+        else:
+            return ""
+
     def get(self):
         
         edit_header = "<h1>Signup</h1>"
@@ -78,7 +78,7 @@ class Main(webapp2.RequestHandler):
                         </td>
                         <td>
                             <label class = "error">
-                                <input type="text" name="username" value = ""/ >{0} 
+                                <input type="text" name="username" value = ""/ > {0} 
                             </label>
                         </td>
                     </tr>
@@ -89,7 +89,7 @@ class Main(webapp2.RequestHandler):
                             </label>
                         </td>
                         <td>
-                            <label class = "error2">
+                            <label class = "error">
                                 <input type="text" name="password" value = ""/> {1}
                             </label>
                         </td>
@@ -101,7 +101,7 @@ class Main(webapp2.RequestHandler):
                             </label>
                         </td>
                         <td>
-                            <label class = "error3">
+                            <label class = "error">
                                 <input type="text" name="verify" value = ""/> {2}
                             </label>
                         </td>
@@ -113,8 +113,8 @@ class Main(webapp2.RequestHandler):
                             </label>
                         </td>
                         <td>
-                            <label class = "error4">
-                                <input type="text" name="email" value = ""/>{3}
+                            <label class = "error">
+                                <input type="text" name="email" value = ""/> {3}
                             </label>
                         </td>
                     </tr>
@@ -128,33 +128,40 @@ class Main(webapp2.RequestHandler):
         self.response.write(content)
 
     def post(self):
-        have_error = False
         username = self.request.get('username')
         password = self.request.get('password')
         verify = self.request.get('verify')
         email = self.request.get('email')
 
-        if not valid_username(username) :
+        # this works, but it will only handle one error at one time
+        # Think about how if, elif statements work - once ONE of these is true the rest never get hit
+        # this also means you don't need the have_error variable because if none of them are True
+        # then you can just end with an else statement
+        if not self.valid_username(username) and not self.valid_password(password):
             error = "Invalid Username"
-            self.redirect("/?error=" + cgi.escape(error, quote=True))
-            have_error = True
-
-        elif not valid_password(password):
             error2 = "Invalid Password"
-            self.redirect("/?error2=" + cgi.escape(error2, quote=True))
-            have_error = True
-            
+            self.redirect("/?error=" + error + "&error2=" + error2 )  # you don't need to escape the error message   
+        elif password != verify and not self.valid_username(username):
+            error3 = "Your passwords did not match!"
+            error = "Invalid Username"
+            self.redirect("/?error3=" + error3 + "&error=" + error)
         elif password != verify:
             error3 = "Your passwords did not match!"
-            self.redirect("/?error3=" + cgi.escape(error3, quote=True))
-            have_error = True
-
-        elif not valid_email(email):
+            self.redirect("/?error3=" + error3)
+        elif password != verify and not self.valid_email(email):
+            error3 = "Your passwords did not match!"
             error4 = "Invalid Email"
-            self.redirect("/?error4=" + cgi.escape(error4, quote=True))
-            have_error = True
-
-        elif not have_error:
+            self.redirect("/?error3=" + error3 + "&error4=" + error4) 
+        elif not self.valid_username(username):
+            error = "Invalid Username"
+            self.redirect("/?error=" + error )
+        elif not self.valid_password(password):
+            error2 = "Invalid Password"
+            self.redirect("/?error2=" + error2) 
+        elif not self.valid_email(email):
+            error4 = "Invalid Email"
+            self.redirect("/?error4=" + error4)
+        else:
             # build response content
             sentence = "<h2> Welcome, " + username + "!</h2>"
             content = page_header + "<p>" + sentence + "</p>" + page_footer
