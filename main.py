@@ -64,6 +64,11 @@ class Main(webapp2.RequestHandler):
         error4 = self.request.get("error4")
         error_element4 = error4 if error4 else ""
 
+        username = self.request.get("username")
+        password = self.request.get('password')
+        verify = self.request.get('verify')
+        email = self.request.get('email')
+
 
         #a form for entering the username/password/email
         forms = """
@@ -78,7 +83,7 @@ class Main(webapp2.RequestHandler):
                         </td>
                         <td>
                             <label class = "error">
-                                <input type="text" name="username" value = ""/ > {0} 
+                                <input type="text" name="username" value = "{4}" / > {0} 
                             </label>
                         </td>
                     </tr>
@@ -90,7 +95,7 @@ class Main(webapp2.RequestHandler):
                         </td>
                         <td>
                             <label class = "error">
-                                <input type="text" name="password" value = ""/> {1}
+                                <input type="text" name="password" value = "{5}"/> {1}
                             </label>
                         </td>
                     </tr>
@@ -102,7 +107,7 @@ class Main(webapp2.RequestHandler):
                         </td>
                         <td>
                             <label class = "error">
-                                <input type="text" name="verify" value = ""/> {2}
+                                <input type="text" name="verify" value = "{6}" /> {2}
                             </label>
                         </td>
                     </tr>
@@ -114,7 +119,7 @@ class Main(webapp2.RequestHandler):
                         </td>
                         <td>
                             <label class = "error">
-                                <input type="text" name="email" value = ""/> {3}
+                                <input type="text" name="email" value = "{7}"/> {3}
                             </label>
                         </td>
                     </tr>
@@ -123,8 +128,7 @@ class Main(webapp2.RequestHandler):
             <input type ="Submit">
         </form>
         """
-           
-        content = page_header + edit_header + forms.format(error_element,error_element2,error_element3,error_element4) + page_footer 
+        content = page_header + edit_header + forms.format(error_element,error_element2,error_element3,error_element4,username,password,verify,email) + page_footer 
         self.response.write(content)
 
     def post(self):
@@ -132,35 +136,29 @@ class Main(webapp2.RequestHandler):
         password = self.request.get('password')
         verify = self.request.get('verify')
         email = self.request.get('email')
+        error = "Invalid Username"
+        error2 = "Invalid Password"
+        error3 = "Your passwords did not match!"
+        error4 = "Invalid Email"
 
-        # this works, but it will only handle one error at one time
-        # Think about how if, elif statements work - once ONE of these is true the rest never get hit
-        # this also means you don't need the have_error variable because if none of them are True
-        # then you can just end with an else statement
-        if not self.valid_username(username) and not self.valid_password(password):
-            error = "Invalid Username"
-            error2 = "Invalid Password"
-            self.redirect("/?error=" + error + "&error2=" + error2 )  # you don't need to escape the error message   
+        if not self.valid_username(username) and not self.valid_password(password) and not self.valid_email(email) and password != verify:
+            self.redirect("/?error=" + error + "&error2=" + error2 +"&error3="+error3+"&error4="+error4+ "&username=" +username +"&email="+ email +"&password=" + password + "&verify="+verify) 
+        elif not self.valid_username(username) and not self.valid_password(password) and not self.valid_email(email):
+            self.redirect("/?error=" + error + "&error2=" + error2 +"&error4="+error4+ "&username=" +username +"&email="+ email +"&password=" + password + "&verify="+verify)  
         elif password != verify and not self.valid_username(username):
-            error3 = "Your passwords did not match!"
-            error = "Invalid Username"
-            self.redirect("/?error3=" + error3 + "&error=" + error)
-        elif password != verify:
-            error3 = "Your passwords did not match!"
-            self.redirect("/?error3=" + error3)
+            self.redirect("/?error3=" + error3 + "&error=" + error + "&username=" +username +"&email="+ email +"&password=" + password + "&verify="+verify)
+        elif password != verify and not self.valid_password(password):
+            self.redirect("/?error2=" + error2 + "&error3=" + error3 +"&username=" +username +"&email="+ email +"&password=" + password + "&verify="+verify)
         elif password != verify and not self.valid_email(email):
-            error3 = "Your passwords did not match!"
-            error4 = "Invalid Email"
-            self.redirect("/?error3=" + error3 + "&error4=" + error4) 
+            self.redirect("/?error3=" + error3 + "&error4=" + error4+"&username=" +username +"&email="+ email +"&password=" + password + "&verify="+verify) 
+        elif password != verify:
+            self.redirect("/?error3=" + error3 +"&username=" +username +"&email="+ email +"&password=" + password + "&verify="+verify)
         elif not self.valid_username(username):
-            error = "Invalid Username"
-            self.redirect("/?error=" + error )
-        elif not self.valid_password(password):
-            error2 = "Invalid Password"
-            self.redirect("/?error2=" + error2) 
+            self.redirect("/?error=" + error + "&username=" +username +"&email="+ email +"&password=" + password + "&verify="+verify)
+        elif not self.valid_password(password) and not self.valid_email(email):
+            self.redirect("/?error2=" + error2 +"&error4="+error4+ "&username=" +username +"&email="+ email +"&password=" + password + "&verify="+verify) 
         elif not self.valid_email(email):
-            error4 = "Invalid Email"
-            self.redirect("/?error4=" + error4)
+            self.redirect("/?error4=" + error4+"&username=" +username +"&email="+ email +"&password=" + password + "&verify="+verify)
         else:
             # build response content
             sentence = "<h2> Welcome, " + username + "!</h2>"
